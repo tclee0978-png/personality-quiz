@@ -72,6 +72,15 @@
   </noscript>
 </div>
 <script>
+window.onerror = function(msg, url, line, col, error){
+  var el = document.getElementById('app');
+  if(el){
+    el.innerHTML = '<div style="padding:30px;font-family:sans-serif;color:#8C4128;line-height:1.6;">頁面發生錯誤，請把這段文字截圖給我：<br><br>'+msg+'<br>(第 '+line+' 行)</div>';
+  }
+  return true;
+};
+</script>
+<script>
 const MBTI_QUESTIONS = [
   {id:'ei1',axis:'EI',text:'參加完一場有很多陌生人的活動後，你通常會？',opts:[{l:'A',t:'覺得更有精神，還想繼續跟人聊',tr:'E'},{l:'B',t:'需要找時間自己安靜一下',tr:'I'}]},
   {id:'ei2',axis:'EI',text:'遇到一個比較棘手的問題時，你習慣？',opts:[{l:'A',t:'先自己想清楚，整理好再說',tr:'I'},{l:'B',t:'先找人討論，邊講邊釐清',tr:'E'}]},
@@ -370,11 +379,4 @@ function reportHTML(){
     </div>`;
   };
   return `${topbar()}<div class="content report">
-    <span class="kicker">分析報告</span>
-    <h2 class="rt-name display">${report.personalityName}</h2>
-    <p style="font-size:14px;color:var(--muted);line-height:1.7;">${report.summary}</p>
-
-    <section>
-      <h3>${mbti.type} 傾向</h3>
-      ${axisBar('EI','E外向','I內向','E','I')}
-      ${axisBar('SN','S實感','N直覺','S',
+    <
