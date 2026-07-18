@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人格特質測驗｜人生方向分析</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#182420; --paper:#F5EFE1; --paper-dim:#EAE2CE; --text:#20281F;
+    --muted:#7A7060; --brass:#A9812F; --jade:#2F5C4C; --jade-dark:#1E3D32;
+    --danger:#8C4128; --line:rgba(32,40,31,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh;}
+  .display{font-family:'Noto Serif TC',serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .app{max-width:720px;margin:0 auto;min-height:100vh;background:var(--paper);position:relative;}
+  .topbar{padding:20px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;}
+  .kicker{font-size:11px;letter-spacing:.16em;color:var(--brass);text-transform:uppercase;}
+  .admin-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:6px;font-family:inherit;}
+  .content{padding:16px 24px 130px;}
+  h1.title{font-size:24px;margin:8px 0 10px;line-height:1.3;}
+  p.sub{color:var(--muted);font-size:14px;line-height:1.7;}
+  .note-box{background:var(--paper-dim);border-left:3px solid var(--brass);padding:12px 16px;font-size:13px;color:var(--jade-dark);margin-top:14px;border-radius:2px;line-height:1.6;}
+  label.fl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  input[type=text],textarea{width:100%;padding:13px 14px;font-size:15px;border:1.5px solid var(--line);border-radius:6px;background:#fff;font-family:inherit;margin-top:6px;}
+  input:focus,textarea:focus{outline:none;border-color:var(--jade);}
+  .err{color:var(--danger);font-size:12px;margin-top:4px;}
+  .field{margin-bottom:16px;}
+  .checkline{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-top:14px;}
+  .btn{display:inline-block;padding:14px 24px;border-radius:6px;border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--jade);color:#fff;width:100%;}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--jade-dark);border:1.5px solid var(--line);}
+  .progress-track{width:100%;height:7px;border-radius:99px;background:var(--paper-dim);overflow:hidden;}
+  .progress-fill{height:100%;border-radius:99px;background:var(--jade);transition:width .3s ease;}
+  .qnum{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--brass);font-weight:700;}
+  .qtext{font-size:16px;font-weight:500;margin:6px 0 12px;line-height:1.55;}
+  .opt{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border:1.5px solid var(--line);border-radius:7px;cursor:pointer;background:#fff;margin-bottom:8px;}
+  .opt:hover{border-color:var(--brass);}
+  .opt.selected{border-color:var(--jade);background:rgba(47,92,76,0.07);}
+  .opt .tag{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--jade-dark);width:16px;flex-shrink:0;}
+  .footer-nav{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top, var(--paper) 65%, transparent);padding:16px 24px 22px;}
+  .footer-nav .row{max-width:720px;margin:0 auto;display:flex;gap:10px;}
+  .footer-nav .row .btn{flex:1;}
+  .loading-wrap{padding:70px 20px;text-align:center;}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--jade);border-radius:50%;margin:0 auto 18px;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .report h2.rt-name{font-size:24px;margin-bottom:4px;}
+  .report section{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--line);}
+  .report section:last-child{border-bottom:none;}
+  .report h3{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);margin:0 0 10px;}
+  .disclaimer{font-size:11px;color:var(--muted);font-style:italic;margin-top:6px;}
+  .barrow{display:flex;justify-content:space-between;font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:4px;}
+  .admin-row{padding:13px 14px;border:1px solid var(--line);border-radius:7px;background:#fff;margin-bottom:8px;cursor:pointer;}
+  .admin-row:hover{border-color:var(--jade);}
+  .empty{color:var(--muted);font-size:14px;padding:30px 0;text-align:center;}
+  @media(max-width:480px){ .topbar,.content{padding-left:18px;padding-right:18px;} }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <noscript>
+    <div style="padding:40px 24px;font-family:sans-serif;color:#20281F;">
+      <p style="font-weight:bold;">這個頁面需要啟用 JavaScript 才能顯示內容。</p>
+      <p>目前開啟這個檔案的瀏覽器或預覽工具沒有執行 JavaScript，所以畫面是空白的。</p>
+      <p>請改用 Chrome 或 Safari 直接開啟這個檔案，或是把檔案上傳到網路空間（例如 GitHub Pages）後用瀏覽器打開網址。</p>
+    </div>
+  </noscript>
+</div>
+<script>
+const MBTI_QUESTIONS = [
+  {id:'ei1',axis:'EI',text:'參加完一場有很多陌生人的活動後，你通常會？',opts:[{l:'A',t:'覺得更有精神，還想繼續跟人聊',tr:'E'},{l:'B',t:'需要找時間自己安靜一下',tr:'I'}]},
+  {id:'ei2',axis:'EI',text:'遇到一個比較棘手的問題時，你習慣？',opts:[{l:'A',t:'先自己想清楚，整理好再說',tr:'I'},{l:'B',t:'先找人討論，邊講邊釐清',tr:'E'}]},
+  {id:'ei3',axis:'EI',text:'忙碌工作一整天後，你比較想？',opts:[{l:'A',t:'找朋友聊聊、出去走走',tr:'E'},{l:'B',t:'自己安靜待著，不太想說話',tr:'I'}]},
+  {id:'ei4',axis:'EI',text:'在團隊會議中，你通常是？',opts:[{l:'A',t:'先觀察、聽完大家意見再發言',tr:'I'},{l:'B',t:'想到什麼就主動說出來',tr:'E'}]},
+  {id:'sn1',axis:'SN',text:'學習一項新事物時，你比較喜歡？',opts:[{l:'A',t:'先理解整體概念，再慢慢細看步驟',tr:'N'},{l:'B',t:'一步一步照步驟操作，做中學',tr:'S'}]},
+  {id:'sn2',axis:'SN',text:'聽到一個新計畫時，你會先注意？',opts:[{l:'A',t:'這件事實際上可不可行',tr:'S'},{l:'B',t:'這件事未來有什麼可能性',tr:'N'}]},
+  {id:'sn3',axis:'SN',text:'做判斷的時候，你比較相信？',opts:[{l:'A',t:'過去實際發生過的經驗',tr:'S'},{l:'B',t:'自己對趨勢與方向的直覺',tr:'N'}]},
+  {id:'sn4',axis:'SN',text:'面對舊有的做事方法，你比較傾向？',opts:[{l:'A',t:'想辦法創造出完全不同的新做法',tr:'N'},{l:'B',t:'在現有的方法上一步步改善',tr:'S'}]},
+  {id:'tf1',axis:'TF',text:'同事最近表現不太好，剛好家裡也遇到困難，你會？',opts:[{l:'A',t:'先了解狀況，再決定怎麼處理',tr:'F'},{l:'B',t:'還是照原本的制度與標準處理',tr:'T'}]},
+  {id:'tf2',axis:'TF',text:'跟別人意見不同的時候，你比較在意？',opts:[{l:'A',t:'這個方案本身合不合理',tr:'T'},{l:'B',t:'這樣講會不會影響彼此關係',tr:'F'}]},
+  {id:'tf3',axis:'TF',text:'選工作的時候，你比較重視？',opts:[{l:'A',t:'待遇好不好、有沒有發展性',tr:'T'},{l:'B',t:'團隊氣氛跟價值觀合不合',tr:'F'}]},
+  {id:'tf4',axis:'TF',text:'要給別人建議的時候，你習慣？',opts:[{l:'A',t:'先顧及對方感受，再慢慢帶到重點',tr:'F'},{l:'B',t:'直接講出問題在哪裡',tr:'T'}]},
+  {id:'jp1',axis:'JP',text:'出去旅行之前，你通常會？',opts:[{l:'A',t:'先排好大致的行程',tr:'J'},{l:'B',t:'到現場再決定要去哪',tr:'P'}]},
+  {id:'jp2',axis:'JP',text:'面對一個有截止日的任務，你通常？',opts:[{l:'A',t:'提早完成，比較安心',tr:'J'},{l:'B',t:'接近期限時效率反而最好',tr:'P'}]},
+  {id:'jp3',axis:'JP',text:'工作內容臨時被改變時，你的感覺比較接近？',opts:[{l:'A',t:'有點煩躁，希望照原計畫走',tr:'J'},{l:'B',t:'還好，甚至覺得有點意思',tr:'P'}]},
+  {id:'jp4',axis:'JP',text:'你比較喜歡的工作方式是？',opts:[{l:'A',t:'內容清楚固定，照表操課',tr:'J'},{l:'B',t:'保留彈性，可以自由發揮',tr:'P'}]}
+];
+const LIFE_QUESTIONS = [
+  {id:'life1',text:'工作中，什麼最容易讓你產生成就感？',opts:[{l:'A',t:'收入明顯增加'},{l:'B',t:'能力被肯定、被看見'},{l:'C',t:'幫助別人獲得改變'},{l:'D',t:'擁有更多自由與自主權'}]},
+  {id:'life2',text:'你比較偏好的工作角色是？',opts:[{l:'A',t:'專業執行與完成任務'},{l:'B',t:'銷售、談判與客戶經營'},{l:'C',t:'管理、協調與帶領團隊'},{l:'D',t:'創意、企劃與內容設計'}]},
+  {id:'life3',text:'你比較偏好的收入模式是？',opts:[{l:'A',t:'固定穩定收入'},{l:'B',t:'固定薪資加績效獎金'},{l:'C',t:'高抽成但收入波動較大'},{l:'D',t:'同時建立兩種以上收入來源'}]},
+  {id:'life4',text:'你比較偏好的人際與客戶模式是？',opts:[{l:'A',t:'客人主動上門後提供服務'},{l:'B',t:'主動開發陌生客戶'},{l:'C',t:'經營熟客與轉介紹'},{l:'D',t:'主要透過網路、內容或個人品牌吸引客戶'}]},
+  {id:'life5',text:'你對風險的承受度比較接近？',opts:[{l:'A',t:'幾乎不能接受收入波動'},{l:'B',t:'可以承受一到三個月不穩定'},{l:'C',t:'可以承受三到六個月不穩定'},{l:'D',t:'願意承擔較高風險換取更高成長機會'}]},
+  {id:'life6',text:'家庭與工作的優先順序，你比較接近？',opts:[{l:'A',t:'家庭時間不能被工作長期犧牲'},{l:'B',t:'短期可以衝刺，但之後必須恢復平衡'},{l:'C',t:'現階段願意優先發展事業'},{l:'D',t:'比起固定休假，更重視時間是否能自己掌控'}]},
+  {id:'life7',text:'對於學習投入，你比較接近？',opts:[{l:'A',t:'只願意學習工作立即需要的內容'},{l:'B',t:'願意投入一到三個月學習新技能'},{l:'C',t:'願意持續投入半年'},{l:'D',t:'為了長期發展，願意持續學習一年以上'}]},
+  {id:'life8',text:'五年後，你最想擁有的生活是？',opts:[{l:'A',t:'穩定收入與家庭生活'},{l:'B',t:'高收入與事業成就'},{l:'C',t:'時間自由與多元收入'},{l:'D',t:'擁有自己的專業、品牌或影響力'}]}
+];
+const ALL_QUESTIONS = [...MBTI_QUESTIONS, ...LIFE_QUESTIONS];
+const PAGE_SIZE = 4;
+const PAGES = [];
+for(let i=0;i<ALL_QUESTIONS.length;i+=PAGE_SIZE) PAGES.push(ALL_QUESTIONS.slice(i,i+PAGE_SIZE));
+
+function scoreMbti(answers){
+  const c = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+  for(const q of MBTI_QUESTIONS){
+    const chosen = answers[q.id];
+    const opt = q.opts.find(o=>o.l===chosen);
+    if(opt) c[opt.tr]++;
+  }
+  const pct=(a,b)=>{const t=(a+b)||1;return {a:Math.round(a/t*100), b:Math.round(b/t*100)};};
+  const ei=pct(c.E,c.I), sn=pct(c.S,c.N), tf=pct(c.T,c.F), jp=pct(c.J,c.P);
+  const balanced=[];
+  if(Math.abs(ei.a-ei.b)<=15) balanced.push('EI');
+  if(Math.abs(sn.a-sn.b)<=15) balanced.push('SN');
+  if(Math.abs(tf.a-tf.b)<=15) balanced.push('TF');
+  if(Math.abs(jp.a-jp.b)<=15) balanced.push('JP');
+  const type = (c.E>=c.I?'E':'I')+(c.S>=c.N?'S':'N')+(c.T>=c.F?'T':'F')+(c.J>=c.P?'J':'P');
+  return {pct:{EI:{E:ei.a,I:ei.b},SN:{S:sn.a,N:sn.b},TF:{T:tf.a,F:tf.b},JP:{J:jp.a,P:jp.b}}, type, balanced};
+}
+
+let state = {
+  screen:'intake', view:'candidate', pageIndex:0,
+  answers:{}, note:'',
+  storeName:'', name:'', age:'', consent:false, intakeErrors:{},
+  submitting:false, result:null, errorMsg:'',
+  selectedId:null
+};
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.view==='list'){ app.innerHTML = listHTML(); attachList(); return; }
+  if(state.screen==='intake'){ app.innerHTML = intakeHTML(); attachIntake(); return; }
+  if(state.screen==='quiz'){ app.innerHTML = quizHTML(); attachQuiz(); return; }
+  if(state.screen==='loading'){ app.innerHTML = loadingHTML(); return; }
+  if(state.screen==='error'){ app.innerHTML = errorHTML(); attachError(); return; }
+  if(state.screen==='report'){ app.innerHTML = reportHTML(); return; }
+}
+
+function topbar(){
+  return `<div class="topbar">
+    <div><span class="kicker">人格特質測驗</span></div>
+    <button class="admin-link" id="listBtn">查看大家的填答</button>
+  </div>`;
+}
+
+function intakeHTML(){
+  const e = state.intakeErrors;
+  return `${topbar()}
+  <div class="content">
+    <h1 class="title display">你真正適合的路，可能和你想的不一樣</h1>
+    <p class="sub">用幾分鐘了解你的人格傾向、工作方式，以及現階段真正重視的人生條件。</p>
+    <p class="sub" style="color:var(--jade-dark)">這不是考試，也沒有標準答案。請選擇你真實會做的決定，而不是看起來比較好的答案。</p>
+    <p class="sub" style="font-size:12px;">共 24 題，約 5～8 分鐘完成。</p>
+
+    <div class="field" style="margin-top:20px;">
+      <label class="fl">店名／團隊名稱</label>
+      <input type="text" id="storeName" value="${state.storeName}" placeholder="例如：台北松山店、姿彤團隊">
+      ${e.storeName?`<div class="err">${e.storeName}</div>`:''}
+    </div>
+    <div class="field">
+      <label class="fl">你的姓名</label>
+      <input type="text" id="nameInput" value="${state.name}" placeholder="請輸入姓名">
+      ${e.name?`<div class="err">${e.name}</div>`:''}
+    </div>
+    <div class="field">
+      <label class="fl">你的年齡</label>
+      <input type="text" inputmode="numeric" id="ageInput" value="${state.age}" placeholder="請輸入年齡">
+      ${e.age?`<div class="err">${e.age}</div>`:''}
+    </div>
+
+    <div class="note-box">本測驗結果可能作為職涯交流或合作參考之一，不會作為唯一錄取依據。你填寫的店名、姓名、年齡與測驗結果，任何有這個網頁連結的人都能在「查看大家的填答」看到。</div>
+
+    <div class="checkline">
+      <input type="checkbox" id="consentBox" ${state.consent?'checked':''}>
+      <span>我了解並同意本次資料使用方式。</span>
+    </div>
+    ${e.consent?`<div class="err">${e.consent}</div>`:''}
+  </div>
+  <div class="footer-nav"><div class="row">
+    <button class="btn btn-primary" id="startBtn">開始了解自己</button>
+  </div></div>`;
+}
+
+function attachIntake(){
+  document.getElementById('listBtn').addEventListener('click', ()=>{ state.view='list'; render(); });
+  document.getElementById('storeName').addEventListener('input', e=>state.storeName=e.target.value);
+  document.getElementById('nameInput').addEventListener('input', e=>state.name=e.target.value);
+  document.getElementById('ageInput').addEventListener('input', e=>{ state.age=e.target.value.replace(/[^0-9]/g,''); e.target.value=state.age; });
+  document.getElementById('consentBox').addEventListener('change', e=>state.consent=e.target.checked);
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    const errs={};
+    if(!state.storeName.trim()) errs.storeName='請填寫店名／團隊名稱';
+    if(!state.name.trim()) errs.name='請填寫姓名';
+    const ageNum=Number(state.age);
+    if(!state.age.trim()) errs.age='請填寫年齡';
+    else if(!Number.isInteger(ageNum)||ageNum<15||ageNum>80) errs.age='年齡需為 15～80 之間的數字';
+    if(!state.consent) errs.consent='請先勾選同意資料使用方式';
+    state.intakeErrors = errs;
+    if(Object.keys(errs).length===0){ state.screen='quiz'; state.pageIndex=0; }
+    render();
+  });
+}
+
+function quizHTML(){
+  const page = PAGES[state.pageIndex];
+  const isLast = state.pageIndex===PAGES.length-1;
+  const pct = Math.round((state.pageIndex/PAGES.length)*100);
+  const qHTML = page.map((q,qi)=>{
+    const globalIdx = state.pageIndex*PAGE_SIZE+qi+1;
+    const opts = q.opts.map(o=>{
+      const sel = state.answers[q.id]===o.l ? 'selected':'';
+      return `<div class="opt ${sel}" data-qid="${q.id}" data-label="${o.l}"><span class="tag">${o.l}</span><span>${o.t}</span></div>`;
+    }).join('');
+    return `<div style="margin-bottom:26px;">
+      <div class="qnum">第 ${globalIdx} 題</div>
+      <div class="qtext">${q.text}</div>
+      ${opts}
+    </div>`;
+  }).join('');
+  const noteHTML = isLast ? `<div class="field">
+      <label class="fl">目前最想改變的一件事是什麼？（選填）</label>
+      <textarea id="noteInput" style="min-height:70px;">${state.note}</textarea>
+    </div>` : '';
+  const complete = page.every(q=>state.answers[q.id]);
+  return `<div class="topbar" style="padding-bottom:8px;">
+    <div style="flex:1;">
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">第 ${state.pageIndex+1} / ${PAGES.length} 頁</div>
+    </div>
+  </div>
+  <div class="content">${qHTML}${noteHTML}</div>
+  <div class="footer-nav"><div class="row">
+    <button class="btn btn-ghost" id="backBtn" ${state.pageIndex===0?'disabled':''}>上一頁</button>
+    <button class="btn btn-primary" id="nextBtn" ${complete?'':'disabled'}>${isLast?'查看我的人格與人生方向':'下一頁'}</button>
+  </div></div>`;
+}
+
+function attachQuiz(){
+  document.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      state.answers[el.dataset.qid] = el.dataset.label;
+      render();
+    });
+  });
+  const noteInput = document.getElementById('noteInput');
+  if(noteInput) noteInput.addEventListener('input', e=>state.note=e.target.value);
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  if(backBtn) backBtn.addEventListener('click', ()=>{ if(state.pageIndex>0){ state.pageIndex--; render(); window.scrollTo(0,0);} });
+  if(nextBtn) nextBtn.addEventListener('click', async ()=>{
+    if(state.pageIndex<PAGES.length-1){ state.pageIndex++; render(); window.scrollTo(0,0); }
+    else { await submitAll(); }
+  });
+}
+
+function loadingHTML(){
+  return `${topbar()}<div class="content"><div class="loading-wrap"><div class="spinner"></div><p style="color:var(--muted);font-size:14px;">正在分析你的回答，請稍候...</p></div></div>`;
+}
+
+function errorHTML(){
+  return `${topbar()}<div class="content"><div class="loading-wrap">
+    <p style="color:var(--danger);font-weight:600;margin-bottom:16px;">${state.errorMsg}</p>
+    <button class="btn btn-primary" id="retryBtn" style="width:auto;">重新提交</button>
+  </div></div>`;
+}
+function attachError(){
+  document.getElementById('retryBtn').addEventListener('click', submitAll);
+}
+
+async function callClaude(systemPrompt, userPrompt){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:systemPrompt, messages:[{role:'user',content:userPrompt}] })
+  });
+  const data = await res.json();
+  return (data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n');
+}
+
+function tryParseJSON(raw){
+  let cleaned = raw.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+  try{
+    const p = JSON.parse(cleaned);
+    if(p.personalityName && p.careerDirections) return p;
+    return null;
+  }catch(e){ return null; }
+}
+
+const SYSTEM_PROMPT = `你是職涯顧問。你會收到一份人格特質測驗的完整作答，包含前端已算好的 MBTI 分數（不可更改，只能解讀）與 8 題人生方向題。
+規則：
+1. 只能輸出純 JSON，不能有任何其他文字或 markdown 標記。
+2. 內容必須根據受測者實際回答個人化，不同人內容要明顯不同，不可套模板。
+3. challenges 用詞誠實直接但不能羞辱或引發恐慌。
+4. 極度精簡：每個文字欄位不超過30字，總輸出必須精簡以符合 1000 tokens 限制內完整輸出，不可超出導致JSON被截斷。
+5. 只能輸出以下 JSON 結構，欄位數量嚴格遵守：
+{"personalityName":"","summary":"(60字內)","coreTraits":["4項，每項15字內"],"strengths":["3項"],"challenges":["3項"],
+"topValues":[{"name":"","reason":"15字內"}]"(3項)",
+"careerDirections":[{"direction":"","fit":"如85%","reason":"20字內","risk":"15字內"}]"(4項)",
+"primaryRecommendation":{"direction":"","reason":"40字內","nonNegotiables":["2項"]},
+"thirtyDayActions":["3項，每項20字內"]}`;
+
+function buildUserPrompt(){
+  const mbti = scoreMbti(state.answers);
+  const mbtiReadable = MBTI_QUESTIONS.map(q=>{
+    const opt=q.opts.find(o=>o.l===state.answers[q.id]);
+    return `${q.text} → ${opt?opt.t:''}`;
+  }).join('\n');
+  const lifeReadable = LIFE_QUESTIONS.map(q=>{
+    const opt=q.opts.find(o=>o.l===state.answers[q.id]);
+    return `${q.text} → ${opt?opt.t:''}`;
+  }).join('\n');
+  return { mbti, prompt: `姓名：${state.name}／年齡：${state.age}／店名或團隊：${state.storeName}
+MBTI結果（不可更改）：${mbti.type}傾向 E${mbti.pct.EI.E}%/I${mbti.pct.EI.I}% S${mbti.pct.SN.S}%/N${mbti.pct.SN.N}% T${mbti.pct.TF.T}%/F${mbti.pct.TF.F}% J${mbti.pct.JP.J}%/P${mbti.pct.JP.P}%
+MBTI題目作答：
+${mbtiReadable}
+人生方向題作答：
+${lifeReadable}
+補充（最想改變的一件事）：${state.note||'（未填寫）'}
+請輸出這位受測者的完整分析報告 JSON。` };
+}
+
+async function submitAll(){
+  if(state.submitting) return;
+  state.submitting = true;
+  state.screen='loading'; render();
+  const {mbti, prompt} = buildUserPrompt();
+  let report = null;
+  try{
+    const first = await callClaude(SYSTEM_PROMPT, prompt);
+    report = tryParseJSON(first);
+    if(!report){
+      const retry = await callClaude(SYSTEM_PROMPT, prompt + '\n\n注意：上次輸出不是合法 JSON 或被截斷，請重新輸出且務必精簡到能在限制內完整輸出純 JSON。');
+      report = tryParseJSON(retry);
+    }
+  }catch(e){ report = null; }
+  state.submitting = false;
+
+  if(!report){
+    state.errorMsg = '分析報告產生失敗，請重新提交一次。';
+    state.screen='error'; render(); return;
+  }
+
+  const record = {
+    id: 'respondent:' + Date.now() + '_' + state.name.replace(/\s+/g,''),
+    storeName: state.storeName, name: state.name, age: Number(state.age),
+    mbtiType: mbti.type, mbtiPct: mbti.pct, balanced: mbti.balanced,
+    personalityName: report.personalityName,
+    completedAt: new Date().toISOString(),
+    note: state.note,
+    report: report
+  };
+  try{ await window.storage.set(record.id, JSON.stringify(record), true); }catch(e){ console.error('save failed', e); }
+
+  state.result = { mbti, report };
+  state.screen='report'; render();
+}
+
+function reportHTML(){
+  const {mbti, report} = state.result;
+  const axisBar = (axis,aLabel,bLabel,aKey,bKey)=>{
+    const isBal = mbti.balanced.includes(axis);
+    return `<div style="margin-bottom:12px;">
+      <div class="barrow"><span>${aLabel} ${mbti.pct[axis][aKey]}%</span><span>${bLabel} ${mbti.pct[axis][bKey]}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${mbti.pct[axis][aKey]}%"></div></div>
+      ${isBal?'<div class="disclaimer">此向度較為平衡，你可能會依照不同環境或角色切換。</div>':''}
+    </div>`;
+  };
+  return `${topbar()}<div class="content report">
+    <span class="kicker">分析報告</span>
+    <h2 class="rt-name display">${report.personalityName}</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.7;">${report.summary}</p>
+
+    <section>
+      <h3>${mbti.type} 傾向</h3>
+      ${axisBar('EI','E外向','I內向','E','I')}
+      ${axisBar('SN','S實感','N直覺','S',
