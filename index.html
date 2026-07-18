@@ -379,4 +379,106 @@ function reportHTML(){
     </div>`;
   };
   return `${topbar()}<div class="content report">
-    <
+    <span class="kicker">分析報告</span>
+    <h2 class="rt-name display">${report.personalityName}</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.7;">${report.summary}</p>
+
+    <section>
+      <h3>${mbti.type} 傾向</h3>
+      ${axisBar('EI','E外向','I內向','E','I')}
+      ${axisBar('SN','S實感','N直覺','S','N')}
+      ${axisBar('TF','T思考','F情感','T','F')}
+      ${axisBar('JP','J判斷','P感知','J','P')}
+      <div class="disclaimer">此結果依本次回答進行人格傾向推估，不能取代正式人格測驗、心理評估或專業職涯諮詢。</div>
+    </section>
+
+    <section><h3>核心人格特質</h3><ul>${report.coreTraits.map(t=>`<li>${t}</li>`).join('')}</ul></section>
+    <section><h3>主要優勢</h3><ul>${report.strengths.map(t=>`<li>${t}</li>`).join('')}</ul></section>
+    <section><h3>容易卡住的地方</h3><ul>${report.challenges.map(t=>`<li>${t}</li>`).join('')}</ul></section>
+    <section><h3>你真正重視的前三名</h3>${report.topValues.map((v,i)=>`<div style="margin-bottom:6px;"><b>${i+1}. ${v.name}</b><div style="font-size:13px;color:var(--muted);">${v.reason}</div></div>`).join('')}</section>
+    <section><h3>適合發展的方向</h3>${report.careerDirections.map(c=>`<div style="margin-bottom:10px;"><b>${c.direction}</b> <span class="mono" style="color:var(--jade);font-size:12px;">${c.fit}</span><div style="font-size:13px;color:var(--muted);">${c.reason}</div><div style="font-size:12px;color:var(--danger);">注意：${c.risk}</div></div>`).join('')}</section>
+    <section>
+      <h3>現階段最建議的一條路</h3>
+      <p style="font-size:14.5px;">依照你的回答，現階段最建議你優先<b>${report.primaryRecommendation.direction}</b>。</p>
+      <p style="font-size:13px;color:var(--muted);">${report.primaryRecommendation.reason}</p>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">不能妥協：${report.primaryRecommendation.nonNegotiables.join('、')}</div>
+    </section>
+    <section><h3>接下來 30 天行動建議</h3><ol>${report.thirtyDayActions.map(a=>`<li>${a}</li>`).join('')}</ol></section>
+  </div>`;
+}
+
+// ---------------- SIMPLE PUBLIC LIST (no login) ----------------
+
+let listEntries = [];
+async function loadListEntries(){
+  try{
+    const list = await window.storage.list('respondent:', true);
+    const keys = (list && list.keys) || [];
+    const out = [];
+    for(const k of keys){
+      try{ const r = await window.storage.get(k, true); if(r&&r.value) out.push(JSON.parse(r.value)); }catch(e){}
+    }
+    out.sort((a,b)=> new Date(b.completedAt)-new Date(a.completedAt));
+    listEntries = out;
+  }catch(e){ listEntries=[]; }
+}
+
+function listHTML(){
+  if(state.selectedId){
+    const r = listEntries.find(x=>x.id===state.selectedId);
+    if(!r) return `<div class="content"><p>找不到資料</p></div>`;
+    const rep = r.report;
+    return `<div class="topbar"><span class="kicker">填答詳情</span>
+      <button class="admin-link" id="backToListBtn">← 回名單</button></div>
+    <div class="content">
+      <div style="font-size:11px;color:var(--muted);">${r.storeName}</div>
+      <h1 class="title display" style="font-size:22px;">${r.name}</h1>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">${r.age}歲・完成於 ${new Date(r.completedAt).toLocaleString('zh-TW')}</div>
+      <div class="mono" style="font-size:13px;line-height:1.9;margin-bottom:10px;">
+        ${r.mbtiType} 傾向・${r.personalityName}<br>
+        E ${r.mbtiPct.EI.E}% / I ${r.mbtiPct.EI.I}%　S ${r.mbtiPct.SN.S}% / N ${r.mbtiPct.SN.N}%<br>
+        T ${r.mbtiPct.TF.T}% / F ${r.mbtiPct.TF.F}%　J ${r.mbtiPct.JP.J}% / P ${r.mbtiPct.JP.P}%
+      </div>
+      <p style="font-size:13.5px;">${rep.summary}</p>
+      <p style="font-size:13.5px;"><b>核心特質：</b>${rep.coreTraits.join('、')}</p>
+      <p style="font-size:13.5px;"><b>優勢：</b>${rep.strengths.join('、')}</p>
+      <p style="font-size:13.5px;"><b>卡點：</b>${rep.challenges.join('、')}</p>
+      <p style="font-size:13.5px;"><b>建議方向：</b>${rep.careerDirections.map(c=>c.direction).join('、')}</p>
+      <p style="font-size:13.5px;"><b>優先建議：</b>${rep.primaryRecommendation.direction}</p>
+    </div>`;
+  }
+  return `<div class="topbar"><span class="kicker">大家的填答</span>
+    <button class="admin-link" id="backToTestBtn">回到測驗</button></div>
+  <div class="content" id="listWrap"><div class="loading-wrap"><div class="spinner"></div></div></div>`;
+}
+
+function attachList(){
+  var backToTestBtn = document.getElementById('backToTestBtn');
+  if(backToTestBtn) backToTestBtn.addEventListener('click', function(){ state.view='candidate'; state.selectedId=null; render(); });
+  var backToListBtn = document.getElementById('backToListBtn');
+  if(backToListBtn) backToListBtn.addEventListener('click', function(){ state.selectedId=null; render(); });
+  if(state.selectedId) return;
+  loadListEntries().then(()=>{
+    const wrap = document.getElementById('listWrap');
+    if(!wrap) return;
+    if(listEntries.length===0){
+      wrap.innerHTML = `<div class="empty">目前還沒有人填過</div>`;
+      return;
+    }
+    wrap.innerHTML = listEntries.map(r=>`
+      <div class="admin-row" data-id="${r.id}">
+        <div style="font-size:11px;color:var(--muted);">${r.storeName}</div>
+        <div style="font-weight:700;">${r.name}｜${r.age}歲</div>
+        <div style="font-size:13px;">${r.mbtiType} 傾向｜${r.personalityName}</div>
+        <div style="font-size:11px;color:var(--muted);">${new Date(r.completedAt).toLocaleString('zh-TW')}</div>
+      </div>`).join('');
+    wrap.querySelectorAll('.admin-row').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.selectedId = el.dataset.id; render(); });
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
