@@ -281,10 +281,14 @@ function attachError(){
   document.getElementById('retryBtn').addEventListener('click', submitAll);
 }
 
+// 請把下面這個網址換成你自己的 Cloudflare Worker 網址（部署完成後會拿到，格式像
+// https://claude-proxy.你的帳號.workers.dev）
+const WORKER_URL = 'https://claude-proxy.tclee0978.workers.dev';
+
 async function callClaude(systemPrompt, userPrompt){
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch(WORKER_URL, {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:systemPrompt, messages:[{role:'user',content:userPrompt}] })
+    body: JSON.stringify({ system:systemPrompt, prompt:userPrompt })
   });
   const data = await res.json();
   return (data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('\n');
